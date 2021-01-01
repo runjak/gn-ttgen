@@ -30,22 +30,20 @@ const getCurrentActions = async (page: Page) => {
   return page.$$(selectors.actions);
 };
 
+const playLevel = async (page: Page) => {
+  await clickStartButton(page);
+};
+
 const main = async () => {
   const browser = await launch({ headless });
   const page = await browser.newPage();
   await page.goto(entryPoint);
 
   await clickStartButton(page);
-  await clickStartButton(page);
 
-  const tasks = await getTasks(page);
-  console.log("current tasks are:", JSON.stringify(tasks));
+  await playLevel(page);
 
-  const [action] = await getCurrentActions(page);
-  console.log("clicking!");
-  await action.click();
   await sleep(30 * second);
-
   await browser.close();
 };
 
