@@ -7,7 +7,12 @@ const headless = false;
 const selectors = {
   startButton: "a.button.start",
   tasks: ".tasklist .task",
-  actions: ".world [href]",
+  signs: '.world [href]>img[src="img/sign_00.png"]',
+  door: '.world [href]>img[src="img/door_00.png"]',
+  upstairs: '.world [href]>img[src="img/upstairs_00.png"]',
+  downstairs: '.world [href]>img[src="img/downstairs_00.png"]',
+  employee: '.world [href]>img[src^="img/employee_"]',
+  byHref: (href: string) => `.world [href="${href}"]`,
 } as const;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,15 +28,69 @@ const getTasks = (page: Page): Promise<Array<string>> =>
     elements.map((element) => element.innerHTML)
   );
 
-const getCurrentActions = async (page: Page) => {
-  console.log("getCurrentActions");
-  await page.waitForSelector(selectors.actions);
-  console.log("selecting…");
-  return page.$$(selectors.actions);
+const tasksDone = (tasks: Array<string>): boolean => {
+  return tasks.length === 1 && tasks[0] === "Kehre nach draußen zurück.";
+};
+
+type Person = {
+  readonly name: string;
+  readonly href: string;
+};
+
+type Room = {
+  readonly discovered: boolean;
+  readonly isStart: boolean;
+  readonly signs: Array<string>;
+  readonly persons: Array<Person>;
+  readonly links: Array<Room>;
+};
+
+const startRoom = {
+  discovered: false,
+  isStart: true,
+  signs: [],
+  persons: [],
+  links: [],
+};
+
+const parentHrefs = (page: Page, selector: string): Promise<Array<string>> =>
+  page.$$eval(selector, (elements) =>
+    elements.map((element) => element.parentElement.getAttribute("href"))
+  );
+
+const discoverRoom = async (page: Page, room: Room): Promise<Room> => {
+  if (room.discovered) {
+    return room;
+  }
+
+  const signHrefPromise = room.isStart
+    ? parentHrefs(page, selectors.signs)
+    : ([] as Array<string>);
+  const linkHrefPromise = parentHrefs(
+    page,
+    [selectors.door, selectors.upstairs, selectors.downstairs].join(",")
+  );
+  const employeeHrefPromise = parentHrefs(page, selectors.employee);
+  const [signHrefs, linkHrefs, employeeHrefs] = await Promise.all([
+    signHrefPromise,
+    linkHrefPromise,
+    employeeHrefPromise,
+  ]);
+
+  console.log("stuff found in room:");
+  console.log("signs:", signHrefs.join(" "));
+  console.log("links:", linkHrefs.join(" "));
+  console.log("employees:", employeeHrefs.join(" "));
+
+  return {
+    ...room,
+    discovered: true,
+  };
 };
 
 const playLevel = async (page: Page) => {
   await clickStartButton(page);
+  const discoveredStart = discoverRoom(page, startRoom);
 };
 
 const main = async () => {
