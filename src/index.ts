@@ -19,10 +19,8 @@ const selectors = {
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const second = 1000;
 
-const clickStartButton = async (page: Page) => {
-  await page.waitForSelector(selectors.startButton);
-  await page.click(selectors.startButton);
-};
+const click = async (page: Page, selector: string) =>
+  Promise.all([page.click(selector), page.waitForNavigation()]);
 
 const getTasks = (page: Page): Promise<Array<string>> =>
   page.$$eval(selectors.tasks, (elements) =>
@@ -34,7 +32,8 @@ const tasksDone = (tasks: Array<string>): boolean => {
 };
 
 type Person = {
-  readonly name: string;
+  readonly name: string | null;
+  readonly tasks: Array<string>;
   readonly href: string;
 };
 
@@ -43,15 +42,15 @@ type Room = {
   readonly isStart: boolean;
   readonly signs: Array<string>;
   readonly persons: Array<Person>;
-  readonly links: Array<Room>;
+  readonly linkHrefs: Array<string>;
 };
 
-const startRoom = {
+const startRoom: Room = {
   discovered: false,
   isStart: true,
   signs: [],
   persons: [],
-  links: [],
+  linkHrefs: [],
 };
 
 const parentHrefs = (page: Page, selector: string): Promise<Array<string>> =>
@@ -66,8 +65,7 @@ const readSigns = async (
   let signs: Array<string> = [];
 
   for (const href of hrefs) {
-    await page.click(selectors.byHref(href));
-    await page.waitForSelector(selectors.infotext);
+    await click(page, selectors.byHref(href));
     const text = await page.$eval(
       selectors.infotext,
       // @ts-ignore .innerText exists
@@ -100,19 +98,18 @@ const discoverRoom = async (page: Page, room: Room): Promise<Room> => {
 
   const signs = await readSigns(page, signHrefs);
   console.log("stuff found in room:");
-  console.log("signs:\n", signs.join("\n"));
-  console.log("links:", linkHrefs.join(" "));
   console.log("employees:", employeeHrefs.join(" "));
 
   return {
     ...room,
     discovered: true,
     signs,
+    linkHrefs,
   };
 };
 
 const playLevel = async (page: Page) => {
-  await clickStartButton(page);
+  await click(page, selectors.startButton);
   const discoveredStart = discoverRoom(page, startRoom);
 };
 
@@ -121,12 +118,16 @@ const main = async () => {
   const page = await browser.newPage();
   await page.goto(entryPoint);
 
-  await clickStartButton(page);
+  await click(page, selectors.startButton);
 
-  await playLevel(page);
-
-  await sleep(5 * second);
-  await browser.close();
+  try {
+    await playLevel(page);
+    await sleep(5 * second);
+  } catch (e) {
+    console.log("exception in playLevel", e);
+  } finally {
+    await browser.close();
+  }
 };
 
 main();
