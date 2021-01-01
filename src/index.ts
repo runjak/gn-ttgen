@@ -12,6 +12,7 @@ const selectors = {
   upstairs: '.world [href]>img[src="img/upstairs_00.png"]',
   downstairs: '.world [href]>img[src="img/downstairs_00.png"]',
   employee: '.world [href]>img[src^="img/employee_"]',
+  infotext: ".infotext",
   byHref: (href: string) => `.world [href="${href}"]`,
 } as const;
 
@@ -58,6 +59,26 @@ const parentHrefs = (page: Page, selector: string): Promise<Array<string>> =>
     elements.map((element) => element.parentElement.getAttribute("href"))
   );
 
+const readSigns = async (
+  page: Page,
+  hrefs: Array<string>
+): Promise<Array<string>> => {
+  let signs: Array<string> = [];
+
+  for (const href of hrefs) {
+    await page.click(selectors.byHref(href));
+    await page.waitForSelector(selectors.infotext);
+    const text = await page.$eval(
+      selectors.infotext,
+      // @ts-ignore .innerText exists
+      (element: Element): string => element?.innerText ?? ""
+    );
+    signs.push(text.trim());
+  }
+
+  return signs;
+};
+
 const discoverRoom = async (page: Page, room: Room): Promise<Room> => {
   if (room.discovered) {
     return room;
@@ -77,14 +98,16 @@ const discoverRoom = async (page: Page, room: Room): Promise<Room> => {
     employeeHrefPromise,
   ]);
 
+  const signs = await readSigns(page, signHrefs);
   console.log("stuff found in room:");
-  console.log("signs:", signHrefs.join(" "));
+  console.log("signs:\n", signs.join("\n"));
   console.log("links:", linkHrefs.join(" "));
   console.log("employees:", employeeHrefs.join(" "));
 
   return {
     ...room,
     discovered: true,
+    signs,
   };
 };
 
@@ -102,7 +125,7 @@ const main = async () => {
 
   await playLevel(page);
 
-  await sleep(30 * second);
+  await sleep(5 * second);
   await browser.close();
 };
 
