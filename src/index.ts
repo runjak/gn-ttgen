@@ -1,4 +1,4 @@
-const puppeteer = require('puppeteer');
+import puppeteer from 'puppeteer';
 
 const entryPoint = 'https://engelsystem.de/a38';
 const headless = false;
