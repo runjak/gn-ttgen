@@ -6,12 +6,14 @@
   "author": "Jakob Runge <github@runjak.codes>",
   "license": "MIT",
   "scripts": {
-    "start": "ts-node src/index.ts"
+    "start": "ts-node src/index.ts",
+    "fmt": "prettier --write src"
   },
   "dependencies": {
     "puppeteer": "^5.5.0"
   },
   "devDependencies": {
+    "prettier": "2.2.1",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.3"
   }
