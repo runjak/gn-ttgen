@@ -1,0 +1,14 @@
+{
+  "name": "pha38ntom",
+  "version": "1.0.0",
+  "main": "index.js",
+  "repository": "git@github:runjak/pha38ntom",
+  "author": "Jakob Runge <github@runjak.codes>",
+  "license": "MIT",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "puppeteer": "^5.5.0"
+  }
+}
