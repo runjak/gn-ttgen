@@ -3,6 +3,8 @@ import { platform } from "os";
 import { Browser } from "puppeteer/lib/cjs/puppeteer/common/Browser";
 import { Page } from "puppeteer/lib/cjs/puppeteer/common/Page";
 
+import { main as a38main } from "../a38";
+
 const getFfmpegHost = () => {
   const ffmpegServer = process.env["FFMPEG_SERVER"];
   const ffmpegServerPort = process.env["FFMPEG_SERVER_PORT"];
@@ -77,7 +79,9 @@ export const main = async (url: string, duration: number) => {
       window.postMessage(msg, "*");
     }, getFfmpegHost());
 
-    await sleep(duration);
+    await sleep(second);
+    await a38main(page);
+    await sleep(second);
   } catch (error) {
     console.error(error);
   } finally {

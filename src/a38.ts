@@ -212,7 +212,7 @@ export const main = async (page: Page): Promise<void> => {
   await click(page, selectors.startButton);
 
   try {
-    for (let i = 0; i < 5; i++) {
+    for (let i = 0; i < 20; i++) {
       await playLevel(page);
     }
   } catch (e) {
