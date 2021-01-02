@@ -81,7 +81,7 @@ export const main = async (url: string, duration: number) => {
 
     await sleep(second);
     await a38main(page);
-    await sleep(second);
+    await sleep(5 * second);
   } catch (error) {
     console.error(error);
   } finally {
