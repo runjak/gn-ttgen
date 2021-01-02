@@ -34,7 +34,13 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const second = 1000;
 
 const click = async (page: Page, selector: string) =>
-  Promise.all([page.click(selector), page.waitForNavigation()]);
+  Promise.all([
+    page.evaluate((selector) => {
+      // @ts-ignore .click is available
+      document.querySelector(String(selector)).click();
+    }, selector),
+    page.waitForNavigation(),
+  ]);
 
 const getTasks = (page: Page): Promise<Array<string>> =>
   page.$$eval(selectors.tasks, (elements) =>
