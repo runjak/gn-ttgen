@@ -17,21 +17,6 @@ const selectors = {
   byHref: (href: string) => `.world [href="${href}"]`,
 } as const;
 
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-const second = 1000;
-
-const click = async (page: Page, selector: string) =>
-  Promise.all([page.click(selector), page.waitForNavigation()]);
-
-const getTasks = (page: Page): Promise<Array<string>> =>
-  page.$$eval(selectors.tasks, (elements) =>
-    elements.map((element) => element.innerHTML)
-  );
-
-const tasksDone = (tasks: Array<string>): boolean => {
-  return tasks.length === 1 && tasks[0] === "Kehre nach draußen zurück.";
-};
-
 type Employee = {
   readonly name: string | null;
   readonly href: string;
@@ -43,6 +28,22 @@ type Room = {
   readonly doorHrefs: Array<string>;
   readonly upstairsHref: string | null;
   readonly downstairsHref: string | null;
+};
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+const second = 1000;
+
+const click = async (page: Page, selector: string) =>
+  Promise.all([page.click(selector), page.waitForNavigation()]);
+
+const getTasks = (page: Page): Promise<Array<string>> =>
+  page.$$eval(selectors.tasks, (elements) =>
+    // @ts-ignore .innerText exists
+    elements.map((element) => element?.innerText ?? "")
+  );
+
+const tasksDone = (tasks: Array<string>): boolean => {
+  return tasks.length === 1 && tasks[0] === "Kehre nach draußen zurück.";
 };
 
 const parentHrefs = (page: Page, selector: string): Promise<Array<string>> =>
@@ -142,8 +143,6 @@ const discoverRoom = async (page: Page): Promise<Room> => {
 
   const signs = await readSigns(page, signHrefs);
   const employees = await interrogateAll(page, employeeHrefs);
-  console.log("stuff found in room:");
-  console.log("employees:", employees.map((e) => JSON.stringify(e)).join(" "));
 
   return {
     signs,
@@ -156,9 +155,58 @@ const discoverRoom = async (page: Page): Promise<Room> => {
 
 const playLevel = async (page: Page) => {
   await click(page, selectors.startButton);
-  const discoveredStart = await discoverRoom(page);
-  await click(page, selectors.byHref(discoveredStart.doorHrefs[0]));
-  const secondRoom = await discoverRoom(page);
+  const startRoom = await discoverRoom(page);
+  // @ts-ignore fromEntries exists
+  let buildings: Record<string, Array<Room>> = Object.fromEntries(
+    startRoom.doorHrefs.map((href) => [href, []])
+  );
+
+  let tasks = await getTasks(page);
+  let buildingDoors = startRoom.doorHrefs.slice();
+  while (!tasksDone(tasks)) {
+    // Cycle to next entry
+    const currentEntry = buildingDoors.shift();
+    buildingDoors.push(currentEntry);
+
+    // Enter current building and get buildingRooms
+    await click(page, selectors.byHref(currentEntry));
+    const buildingRooms = buildings[currentEntry];
+
+    if (buildingRooms.length === 0) {
+      // Move up discovering rooms the first time
+      let discovering = true;
+      while (discovering) {
+        const currentRoom = await discoverRoom(page);
+        buildingRooms.push(currentRoom);
+
+        discovering = currentRoom.upstairsHref !== null;
+        if (discovering) {
+          await click(page, selectors.byHref(currentRoom.upstairsHref));
+        }
+      }
+    } else {
+      // Move up knowing the rooms
+      for (const currentRoom of buildingRooms) {
+        const { employees, upstairsHref } = currentRoom;
+        await interrogateAll(
+          page,
+          employees.map((e) => e.href)
+        );
+        if (upstairsHref !== null) {
+          await click(page, selectors.byHref(upstairsHref));
+        }
+      }
+    }
+
+    // Move to ground floor
+    for (let i = buildingRooms.length - 1; i >= 0; i++) {
+      await click(page, buildingRooms[i].downstairsHref);
+    }
+
+    // Update tasks and leave building
+    tasks = await getTasks(page);
+    await click(page, buildingRooms[0].doorHrefs[0]);
+  }
 };
 
 const main = async () => {
@@ -170,10 +218,10 @@ const main = async () => {
 
   try {
     await playLevel(page);
-    await sleep(5 * second);
   } catch (e) {
     console.log("exception in playLevel", e);
   } finally {
+    await sleep(5 * second);
     await browser.close();
   }
 };
