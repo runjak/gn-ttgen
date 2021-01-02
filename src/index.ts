@@ -199,13 +199,13 @@ const playLevel = async (page: Page) => {
     }
 
     // Move to ground floor
-    for (let i = buildingRooms.length - 1; i >= 0; i++) {
-      await click(page, buildingRooms[i].downstairsHref);
+    for (let i = buildingRooms.length - 1; i > 0; i--) {
+      await click(page, selectors.byHref(buildingRooms[i].downstairsHref));
     }
 
     // Update tasks and leave building
     tasks = await getTasks(page);
-    await click(page, buildingRooms[0].doorHrefs[0]);
+    await click(page, selectors.byHref(buildingRooms[0].doorHrefs[0]));
   }
 };
 
@@ -217,7 +217,9 @@ const main = async () => {
   await click(page, selectors.startButton);
 
   try {
-    await playLevel(page);
+    for (let i = 0; i < 5; i++) {
+      await playLevel(page);
+    }
   } catch (e) {
     console.log("exception in playLevel", e);
   } finally {
