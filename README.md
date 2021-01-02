@@ -40,3 +40,9 @@ Gnöttgen uses the following environment variables:
 * `WS_AUTH_TOKEN`
   * A token used to verify that the client should be able to stream using the websocket.
   * Set it to something like `pwgen 32 1`.
+
+## Known bugs
+
+* When an employee has two tasks Gnöttgen only ever chooses one of them.
+  This can cause Gnöttgen to run in an endless loop forever.
+
