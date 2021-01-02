@@ -40,7 +40,9 @@ type Employee = {
 type Room = {
   readonly signs: Array<string>;
   readonly employees: Array<Employee>;
-  readonly linkHrefs: Array<string>;
+  readonly doorHrefs: Array<string>;
+  readonly upstairsHref: string | null;
+  readonly downstairsHref: string | null;
 };
 
 const parentHrefs = (page: Page, selector: string): Promise<Array<string>> =>
@@ -89,7 +91,7 @@ const checkTasks = async (page: Page) => {
   let previousLabel = "";
   let currentLabel = await getTaskButtonLabel(page);
 
-  while (currentLabel !== '' && previousLabel !== currentLabel) {
+  while (currentLabel !== "" && previousLabel !== currentLabel) {
     await click(page, selectors.dialogTask);
     const answer = await getInfotext(page);
     console.log(currentLabel, "->", answer);
@@ -120,15 +122,22 @@ const interrogateAll = async (
 
 const discoverRoom = async (page: Page): Promise<Room> => {
   const signHrefPromise = parentHrefs(page, selectors.signs);
-  const linkHrefPromise = parentHrefs(
-    page,
-    [selectors.door, selectors.upstairs, selectors.downstairs].join(",")
-  );
+  const doorHrefsPromise = parentHrefs(page, selectors.door);
+  const upstairsHrefPromise = parentHrefs(page, selectors.upstairs);
+  const downStairsHrefPromise = parentHrefs(page, selectors.downstairs);
   const employeeHrefPromise = parentHrefs(page, selectors.employee);
-  const [signHrefs, linkHrefs, employeeHrefs] = await Promise.all([
+  const [
+    signHrefs,
+    employeeHrefs,
+    doorHrefs,
+    upstairsHrefs,
+    downstairsHrefs,
+  ] = await Promise.all([
     signHrefPromise,
-    linkHrefPromise,
     employeeHrefPromise,
+    doorHrefsPromise,
+    upstairsHrefPromise,
+    downStairsHrefPromise,
   ]);
 
   const signs = await readSigns(page, signHrefs);
@@ -138,15 +147,17 @@ const discoverRoom = async (page: Page): Promise<Room> => {
 
   return {
     signs,
-    linkHrefs,
     employees,
+    doorHrefs,
+    upstairsHref: upstairsHrefs[0] ?? null,
+    downstairsHref: downstairsHrefs[0] ?? null,
   };
 };
 
 const playLevel = async (page: Page) => {
   await click(page, selectors.startButton);
   const discoveredStart = await discoverRoom(page);
-  await click(page, selectors.byHref(discoveredStart.linkHrefs[0]));
+  await click(page, selectors.byHref(discoveredStart.doorHrefs[0]));
   const secondRoom = await discoverRoom(page);
 };
 
