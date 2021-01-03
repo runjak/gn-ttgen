@@ -3,6 +3,7 @@
 ![Gnöttgen](drawing.svg)
 
 Gnöttgen is a piece of software that uses [Puppeteer](https://pptr.dev/) to play and record the point/click adventure 'A38 - Die Behördenübung' as described on [notrademark.de](https://notrademark.de/2021/01/rc3-anekdoten/).
+Twitter thread linking here: […/sicarius/status/1345794207961722881](https://twitter.com/sicarius/status/1345794207961722881)
 
 ## Recordings
 
