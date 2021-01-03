@@ -13,7 +13,8 @@ Gnöttgen tackles the `A38` paper problem in the following fashion:
 
 ## Recording
 
-To record level solving Gnöttgen copies code from [runjak/llywodraeth-adar](https://github.com/runjak/llywodraeth-adar).
+To record level solving Gnöttgen copies code from [runjak/llywodraeth-adar](https://github.com/runjak/llywodraeth-adar),
+which in turn was heavily 'inspired' by [jibon57/bbb-recorder](https://github.com/jibon57/bbb-recorder).
 
 ## Requirements
 
