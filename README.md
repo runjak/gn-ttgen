@@ -6,9 +6,9 @@ Gnöttgen is a piece of software that uses [Puppeteer](https://pptr.dev/) to pla
 
 ## Recordings
 
-* Screen filmed from a mobile phone: [![A38 - taking Gnöttgen to level 6](https://img.youtube.com/q4YvHjIJ4r8/0.jpg)](https://www.youtube.com/watch?v=q4YvHjIJ4r8).
-* A very short run of `6:59`: [![A38 done by Gnöttgen with a lucky level 20](https://img.youtube.com/k5id1CezxFQ/0.jpg)](https://youtu.be/k5id1CezxFQ).
-* A run of `11:31`: [![A38 done by Gnöttgen](https://img.youtube.com/DLHGIfgrbB0/0.jpg)](https://youtu.be/DLHGIfgrbB0).
+* Screen filmed from a mobile phone: [A38 - taking Gnöttgen to level 6](https://www.youtube.com/watch?v=q4YvHjIJ4r8).
+* A very short run of `6:59`: [A38 done by Gnöttgen with a lucky level 20](https://youtu.be/k5id1CezxFQ).
+* A run of `11:31`: [A38 done by Gnöttgen](https://youtu.be/DLHGIfgrbB0).
 
 ## Play strategy
 
