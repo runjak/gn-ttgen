@@ -50,8 +50,10 @@ Gnöttgen uses the following environment variables:
   * A token used to verify that the client should be able to stream using the websocket.
   * Set it to something like `pwgen 32 1`.
 
-## Known bugs
+## Known issues
 
-* When an employee has two tasks Gnöttgen only ever chooses one of them.
+* When an employee has two or more tasks Gnöttgen only ever chooses one of them.
   This can cause Gnöttgen to run in an endless loop forever.
+* Gnöttgen knows where employees sit, but doesn't use the info to speed up the search where possible.
+* Gnöttgen doesn't reroll a level of high complexity to trade for simpler levels.
 
